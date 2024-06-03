@@ -1,32 +1,32 @@
+
 pipeline {
     agent any
-
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('akashrad-dockerhub')
-        DOCKER_PROD_IMAGE = 'akashrad/prod:latest'
+        DOCKER_REPO = 'akashrad/prod'
     }
-
     stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Radak07/devops-build.git'
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build(DOCKER_PROD_IMAGE)
+                    dockerImage = docker.build("${env.DOCKER_REPO}:${env.BUILD_ID}")
                 }
             }
         }
-        stage('Push to Docker Hub') {
+        stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKER_HUB_CREDENTIALS) {
-                        docker.image(DOCKER_PROD_IMAGE).push()
+                    docker.withRegistry('https://index.docker.io/v1/', 'akashrad-dockerhub') {
+                        dockerImage.push("${env.BUILD_ID}")
+                        dockerImage.push('latest')
                     }
                 }
             }
-        }
-    }
-    post {
-        always {
-            cleanWs()
         }
     }
 }
