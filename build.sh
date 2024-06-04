@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t akashrad/devops-build:latest .
+docker build -t akashrad/devops-build:latest . 
